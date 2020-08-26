@@ -32,17 +32,14 @@ public class Consumer {
         consumer.subscribe("TopicTest", "*");
 
         // 注册消息接收到Broker消息后的处理接口
-        consumer.registerMessageListener(new MessageListenerConcurrently() {
-            @Override
-            public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
-                try {
-                    MessageExt messageExt = msgs.get(0);
-                    System.out.printf("线程：%-25s 接收到新消息 %s --- %s %n", Thread.currentThread().getName(), messageExt.getTags(), new String(messageExt.getBody(), RemotingHelper.DEFAULT_CHARSET));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+        consumer.registerMessageListener((MessageListenerConcurrently) (msgs, context) -> {
+            try {
+                MessageExt messageExt = msgs.get(0);
+                System.out.printf("线程：%-25s 接收到新消息 %s --- %s %n", Thread.currentThread().getName(), messageExt.getTags(), new String(messageExt.getBody(), RemotingHelper.DEFAULT_CHARSET));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             }
+            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         });
 
         // 启动消费者(必须在注册完消息监听器后启动，否则会报错)
